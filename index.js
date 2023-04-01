@@ -1,0 +1,206 @@
+const express = require('express');
+const csv = require('csv-parser');
+const fs = require('fs');
+const formData = require("form-data");
+const Mailgun = require("mailgun.js");
+const util = require("util");
+const delay = util.promisify(setTimeout);
+
+
+
+
+const connect_mailgun = new Mailgun(formData);
+const mailgun = connect_mailgun.client({
+    username: "api",
+    key: '2aa4a0e2a18f038cb4c59f04056cea53-d51642fa-82792f13'|| '2aa4a0e2a18f038cb4c59f04056cea53-d51642fa-82792f13',
+});
+
+
+const app = express();
+const port = 3001;
+
+// Initialize Mailgun with your API key and domain
+
+// Create an API endpoint to send emails
+app.get('/send-emails', (req, res) => {
+    // Read the CSV file and send emails
+    const results = [];
+    fs.createReadStream('./data.csv')
+        .pipe(csv())
+        .on('data', async (data) => {
+            // Replace the placeholders in the email text with data from the CSV row
+            const emailText = `<html>
+<head>
+    <title>Event Ticket</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        h1, h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        div.ticket {
+            border: 1px solid black;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+<div id=":pb" class="ii gt" jslog="20277; u014N:xr6bB; 1:WyIjdGhyZWFkLWY6MTc0ODQxOTgwNzc0OTA1Mzk1NSIsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGwsW11d; 4:WyIjbXNnLWY6MTc0ODQ1Mjc4OTc1ODI1MjA1NCIsbnVsbCxbXV0."><div id=":pa" class="a3s aiL msg4091417062683329285"><div class="adM">
+
+
+
+</div><div><div class="adM">
+</div><div marginwidth="0" marginheight="0" style="font-family:Arial,sans-serif;background:#fff"><div class="adM">
+</div><table bgcolor="#fff" cellpadding="0" cellspacing="0" width="100%" border="0" align="center" style="padding:10px 0 25px 0;margin:0 auto;background:#fff">
+    <tbody><tr>
+        <td width="100%" valign="top">
+            <table cellpadding="0" cellspacing="0" width="600" border="0" align="center" bgcolor="ffffff" style="margin:0 auto;padding:35px 25px;min-width:650px;max-width:650px;border:1px solid #e5e5e5">
+                <tbody><tr>
+                    <td colspan="3" style="width:600px;background-color:#ffffff">
+                        <a href="http://email.mail.devfestnagpur.in/c/eJxckc1u3CwUhq8Gb5CtAxgPLLwYxR9f1U7TVO7PMjo2OKAZj2eAOE2vvvKkqtSyhPOg5z2vbZFPSurCtaxpdrWsJVOFbxUbdkKygSkN9eC0nWop0CqYhmlCJorQcuCcMRAgayVUVSsmwXE7oK4Bh4bUMGM4Vdatk0v5jE-X51iFc3Fqfc6XRMSecEO48X4V89E_VbHCS5mW5-xLVuFLyhHHYzU7ws0BtsE_mNxAyU04V8OyHOfX5JeXalzm30-GEW6AgQa2m5SSvNkxVfJGc1QIJejGljWgLQctVYncMbebAJhWJdwO4aZ7__Xbofn4_dOgP_gHZF-0zPaz_z-uCxFdzYozzq7t8TTjmfYew9EX1_hoMeM_AfESqmtMLq4uvkmadRMco8Psymssx8VuKYkwKfx0RHQMAH6wm0iz_UhE98690uxDoiHRzq3GpUzvb0ulWxN0fzjQ_d3df31PH_Z9T6cl0r_sCL-jhBuaw3h0mQZLxJ525p7T7bqI7WYRlUo3iNTwdOtvXObiDXkMtt3mfwUAAP__Ly-orQ" style="text-decoration:none;color:#010101" target="_blank" data-saferedirecturl="https://www.google.com/url?q=http://email.mail.devfestnagpur.in/c/eJxckc1u3CwUhq8Gb5CtAxgPLLwYxR9f1U7TVO7PMjo2OKAZj2eAOE2vvvKkqtSyhPOg5z2vbZFPSurCtaxpdrWsJVOFbxUbdkKygSkN9eC0nWop0CqYhmlCJorQcuCcMRAgayVUVSsmwXE7oK4Bh4bUMGM4Vdatk0v5jE-X51iFc3Fqfc6XRMSecEO48X4V89E_VbHCS5mW5-xLVuFLyhHHYzU7ws0BtsE_mNxAyU04V8OyHOfX5JeXalzm30-GEW6AgQa2m5SSvNkxVfJGc1QIJejGljWgLQctVYncMbebAJhWJdwO4aZ7__Xbofn4_dOgP_gHZF-0zPaz_z-uCxFdzYozzq7t8TTjmfYew9EX1_hoMeM_AfESqmtMLq4uvkmadRMco8Psymssx8VuKYkwKfx0RHQMAH6wm0iz_UhE98690uxDoiHRzq3GpUzvb0ulWxN0fzjQ_d3df31PH_Z9T6cl0r_sCL-jhBuaw3h0mQZLxJ525p7T7bqI7WYRlUo3iNTwdOtvXObiDXkMtt3mfwUAAP__Ly-orQ&amp;source=gmail&amp;ust=1680377139607000&amp;usg=AOvVaw3UmDJBSbjpQyA-HzKZyVt0">
+                            <img src="https://www.womentechmakers.com/static/assets/imgs/misc/logo.png" style="margin:0 auto;padding:0 10px 10px 10px;display:block;height:35px;background-color:#ffffff;color:#010101" border="0" class="CToWUd" data-bit="iit">
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" style="padding:0px 25px 10px 25px;font-size:16px;font-family:Arial,sans-serif;text-align:center;vertical-align:top;background-color:#ffffff;color:#828282">
+                        <span style="font-size:22px;font-weight:bold;color:#4caf50">IWD Nagpur Entry Pass</span>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" style="padding:5px 25px 5px 25px;font-size:16px;font-family:Arial,sans-serif;text-align:center;vertical-align:top;background-color:#ffffff;color:#828282">Ticket ID <span style="color:#000;font-weight:bold">${data.tkt_id}</span></td>
+                </tr>
+                <tr>
+                    <td align="center" style="width:600px;padding:25px 10px 0 10px;text-align:left;background-color:#ffffff">
+                        <table align="center" cellpadding="0" cellspacing="0" style="width:580px;margin:0 auto;background-color:#ffffff">
+                            <tbody><tr>
+                                <td>
+                                    <table align="center" cellpadding="0" cellspacing="0" style="width:580px;margin:0 auto;background-color:#f5f5f5;border-radius:5px">
+                                        <tbody><tr>
+                                            <td>
+                                                <table align="center" cellpadding="0" cellspacing="0" style="width:580px;margin:0 auto;padding:10px;background-color:#f5f5f5;border-top-left-radius:5px;border-top-right-radius:5px">
+                                                    <tbody><tr>
+                                                        <td valign="top" align="center" style="width:580px;background-color:#f5f5f5">
+                                                            <table cellspacing="0" cellpadding="0" align="center" style="width:100%;background-color:#f5f5f5;margin:0px auto">
+                                                                <tbody><tr>
+                                                                    <td valign="top" align="center" style="width:80px;background-color:#f5f5f5;padding:10px 10px 0px 10px">
+                                                                        <img src="https://yt3.googleusercontent.com/ytc/AL5GRJULvpp-Z8YL_SxzvaKzz_8EHPHa5ihU6PQV6k0egw=s176-c-k-c0x00ffffff-no-rj" height="112" style="display:block;background-color:#f5f5f5;color:#010101;border-radius:5px;object-fit:cover" border="0" class="CToWUd" data-bit="iit">
+                                                                    </td>
+                                                                    <td valign="top" align="center" style="width:370px;background-color:#f5f5f5;padding:10px">
+                                                                        <table cellspacing="0" cellpadding="0" align="center" style="width:100%;background-color:#f5f5f5;margin:0px auto">
+                                                                            <tbody><tr>
+                                                                                <td valign="top" align="left" style="padding:0px 5px 0px 0px;height:50px;font-size:20px;font-weight:bold;font-family:Arial,sans-serif;text-align:left;vertical-align:top;background-color:#f5f5f5;color:#3c3c3c">
+                                                                                    <span>${data.name}</span>
+
+                                                                                </td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td valign="bottom" align="left" style="padding:0px 5px 0px 0px;font-size:16px;font-family:Arial,sans-serif;text-align:left;vertical-align:top;background-color:#f5f5f5;color:#3c3c3c">2nd April, 2022<br><span style="display:block;font-size:13px;color:#828282;font-weight:400;padding-top:10px"><span>Venue:</span><br><a href="https://g.co/kgs/wPwiZq">Persistent Systems Limited, Nagpur</a><div></div></span></td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>
+                                                                                    <br>
+                                                                                    <span style="font-size:15px;font-weight:bold;color:#010101">Reporting Time:
+09:00 AM IST</span>
+                                                                                </td>
+                                                                            </tr>
+                                                                            </tbody></table>
+                                                                    </td>
+                                                                </tr>
+                                                                </tbody></table>
+                                                        </td>
+                                                    </tr>
+                                                    </tbody></table>
+                                            </td>
+                                        </tr>
+
+                                        </tbody></table>
+                                </td>
+                            </tr>
+
+
+                            </tbody></table>
+                    </td>
+                </tr>
+
+
+
+                <tr>
+                    <td align="center" style="width:580px;text-align:left;background-color:#ffffff">
+                        <table cellpadding="0" cellspacing="0" style="width:580px;margin:0 auto;background-color:#ffffff">
+                            <tbody>
+                            <tr>
+                                <td valign="top" style="width:100%;background-color:#ffffff">
+                                    <img src="https://ci6.googleusercontent.com/proxy/TYWLRM9skOXuDsYDKbAxTem23y0_04oW3z4Qt-FiFSTz2xmj7W0ZKqB-RMEtab0bjFlRPKgDdIQnOweNwooGLnh9lHHbVhs32SYB-oPuZQ=s0-d-e1-ft#https://in.bmscdn.com/mailers/images/161202ticket/zigzag.png" width="580" height="15" style="width:100%;display:block;background-color:#ffffff;color:#010101" border="0" class="CToWUd" data-bit="iit">
+                                </td>
+                            </tr>
+
+                            </tbody></table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="width:600px;background-color:#ffffff">
+                        <hr style="border:none;border-top:1px solid #e5e5e5;margin:15px 0;">
+                        <p style="text-align:left;color:#003b5c;font-family:Helvetica, Arial, sans-serif;font-size:18px;margin:15px 0;">Thank you for registering for our event!</p>
+                        <p style="text-align:left;color:#003b5c;font-family:Helvetica, Arial, sans-serif;font-size:18px;margin:15px 0;">Please find your attached virtual passes for IWD'23 here </p>
+                        <p style="text-align:left;color:#003b5c;font-family:Helvetica, Arial, sans-serif;font-size:18px;margin:15px 0;">As a reminder, the event will start at 10 AM, and we recommend arriving a few minutes early to allow time for registration and seating.</p>
+                        <hr style="border:none;border-top:1px solid #e5e5e5;margin:15px 0;">
+                        <p style="text-align:left;color:#003b5c;font-family:Helvetica, Arial, sans-serif;font-size:18px;margin:15px 0;">Please keep this email as your confirmation and feel free to contact us if you have any questions or concerns. We will be happy to assist you in any way we can.</p>
+                        <p style="text-align:left;color:#003b5c;font-family:Helvetica, Arial, sans-serif;font-size:18px;margin:15px 0;">Thank you for your interest in our event, and we look forward to seeing you soon.</p>
+                        <hr style="border:none;border-top:1px solid #e5e5e5;margin:15px 0;">
+                        <p style="text-align:left;color:#003b5c;font-family:Helvetica, Arial, sans-serif;font-size:16px;margin:15px 0;">Best regards,<br>WTM, Nagpur</p>
+                    </td>
+                </tr>
+
+                </tbody></table>
+        </td>
+    </tr>
+    </tbody></table>
+    <img alt="" src="https://ci6.googleusercontent.com/proxy/imNwPeuj-Gz_MptgIiSwpGDYc4Me3xE2xcWtex2XnpwxIJ9KwwUlcBZx_Gxn2UGPaF64wDRtXAC9Qa_otjwhFMbhUvk8_zVLQPivQ7RN9MBwaTEyJJmZ0hZ2jV3-2Kcy-AnbcWMSlfDxIXh4hgPyeWBuavXqo5uW4yhwGKTMFPEnN50By51hnZwBKTOy2pYQ9mV2mGja82dRw40=s0-d-e1-ft#http://hhv3mkhg.r.ap-south-1.awstrack.me/I0/0109017f88526718-2692a8a0-096d-40ad-b958-a2e1e7f00198-000000/VtYUy3OBvj3U_adr7QFaez48nMg=41" style="display:none;width:1px;height:1px" class="CToWUd" data-bit="iit"><div></div><div>
+    </div></div>
+    <img width="1px" height="1px" alt="" src="https://ci6.googleusercontent.com/proxy/JGaXgAKOG9jNcHJ4jknbVK5wae-84gynDbBTmMSmi8aojdSWdaBtqaC1ojfWQc2sF6EHB84kAR2WUkclGHAQInHwFj5gbsiXbpCH3vr51sUZ8PkD7DmCzn_ci7ylsUjpEKRWgNNIu3DmMIERz3nzrIac0m11hLrkK2gwrGCemCYBmPEYpSIB-adiqr2LcmqkR7tiZVdWBEMaEmfygIvbkWmjWnIaLDnOD8dNMUEXKeQf1B3hJJExO4DfpV_0O8CDgChsRnQy0o7WIgSSxfUcgUfDIlTvrmbKViSdiMTGrIsgtxTtrPCvSqvMdHXvTY7lqHzCaI0V5s2c_bqPQ7j4j__aBDzeIdJ56GWjZNYUVYcSPrTa8hZLOByWmdL9cA9JS6EeSiZhaDV9_doHaUVsB3kZGk5axv-sZoJVkopJKOuY7FedPEHP69wxphpB11cHzDDlLPepALLai0v_kMHqRUFeadLuVNrfDkWm-1Jto2wvE6_P5IoNTuV3P7dCW_w3B5-BobxdDsUm_Y3ZVv2x1HuDhRsfSfKa_HMC2tOH-tZ5VeNU0J0o2Fm3YT6e7hb5iA=s0-d-e1-ft#http://email.mail.devfestnagpur.in/o/eJxUj01uwjAQhU_jbEZE_g1h4UVEanWBUKUcAA3xQCxIArYbtT19FbrqZhaj956-z1uUl9rsCrKiqrbaaCPqYrBGqF2vvK9QkECtzJkrsTViyz1pwU0RrORSCsEVN7pWdalrYThJf8ad5niumOYjhnvpablQyhNeH5-xDFMx4Ui2w_uIE3QDhttQPOPJY0Y75PxITDVMOiYdPkL5jIniQrHs55FJtwgmXR8JM22ecdPPntascin8EFOt4Jx_rYfJal1kqn2nb8hDSBAStLQ4ShmOLxhYDaA5HKDZ79-6Dj6aroPLHOEfHZN7YNJBDv2NMgTPVAOtO0pY30W0K0Ws6_QqMc2vL-9-Hou_yil4u-Z_AwAA__9H1m7L" class="CToWUd" data-bit="iit"><div class="yj6qo"></div><div class="adL">
+    </div></div></div></div>
+</body>
+</html>`;
+
+
+            // Send email using Mailgun
+                const emailData = {
+                    from: 'womentechmakersnagpur@gmail.com',
+                    to: data.email,
+                    subject: `IWD Nagpur Entry Pass - WTM Nagpur`,
+                    html: emailText,
+                };
+                await delay(7000); // 7-second delay between each email
+
+                await mailgun.messages.create('mail.jayasingh.me', emailData).then(
+                    msg => console.log(msg)
+                ).catch(err => console.log(err)
+                );
+
+
+        })
+        .on('end', () => {
+            console.log('Emails sent!');
+            res.send('Emails sent!');
+        });
+});
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
